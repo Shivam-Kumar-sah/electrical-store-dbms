@@ -1,4 +1,4 @@
-"""
+﻿"""
 Electricity Material Stock Management - CLI Application
 ----------------------------------------------------------
 This is the "application layer" on top of the MySQL database.
@@ -8,18 +8,21 @@ data into the database - respecting the trigger that blocks
 invalid entries (usage > available stock).
 """
 
+import os
 import mysql.connector
 from mysql.connector import Error
 from datetime import date
 
 # ---------------------------------------------------------
 # STEP 1: Database connection settings
-# Change these if your MySQL username/password is different
+# Password is read from an environment variable (DB_PASSWORD)
+# so it never gets hardcoded or committed to GitHub.
+# See README for how to set this on your machine.
 # ---------------------------------------------------------
 DB_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "Shiv@1911",   # <-- change this
+    "password": os.environ.get("DB_PASSWORD", ""),
     "database": "store_db"
 }
 
@@ -102,7 +105,6 @@ def record_usage(conn):
         conn.commit()
         print(f"\n✅ Saved! {emp[1]} used {qty} {mat[2]} of {mat[1]} at {area[1]}.")
     except Error as e:
-        # This is where the database TRIGGER protects us automatically
         if "Insufficient stock" in str(e):
             print(f"\n❌ Cannot save: not enough {mat[1]} in stock right now.")
         else:
@@ -155,7 +157,6 @@ def view_low_stock(conn):
     print(f"{'Material':<28}{'Unit':<8}{'Min':<6}{'Available':<10}{'Shortfall'}")
     print("-" * 65)
     for r in rows:
-        # r = (material_id, material_name, unit, minimum_stock, available_qty, shortfall)
         print(f"{r[1]:<28}{r[2]:<8}{r[3]:<6}{r[4]:<10}{r[5]}")
 
 
